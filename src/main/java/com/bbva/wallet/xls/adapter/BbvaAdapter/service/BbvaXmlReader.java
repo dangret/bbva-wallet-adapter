@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface BbvaXmlReader {
 
-    List<Entry> read(FileInputStream fileInputStream);
+    List<Entry> read(String fileLocation);
 
 }
