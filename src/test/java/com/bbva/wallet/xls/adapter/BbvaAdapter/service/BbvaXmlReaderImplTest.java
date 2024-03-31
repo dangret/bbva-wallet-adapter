@@ -2,8 +2,7 @@ package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
 
 import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.service.impl.BbvaXmlReaderImpl;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.BbvaWalletXmlAdapterImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BbvaXmlReaderImplTest {
 
     @InjectMocks
-    BbvaXmlReaderImpl bbvaXmlReader;
+    BbvaWalletXmlAdapterImpl bbvaXmlReader;
 
     File file;
 

@@ -1,22 +1,18 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.service.BbvaXmlReader;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl.BbvaWalletXmlAdapter;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.File;
-import java.util.List;
-
 @SpringBootApplication
 @RequiredArgsConstructor
 public class BbvaAdapterApplication implements CommandLineRunner {
 
 	EntryService entryService;
-	BbvaXmlReader bbvaXmlReader;
+	BbvaWalletXmlAdapter bbvaWalletXmlAdapter;
 
 	public static void main(String[] args) {
 		SpringApplication.run(BbvaAdapterApplication.class, args);

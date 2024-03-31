@@ -1,21 +1,27 @@
-package com.bbva.wallet.xls.adapter.BbvaAdapter.service.impl;
+package com.bbva.wallet.xls.adapter.BbvaAdapter.adapter;
 
 import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.service.BbvaXmlReader;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl.BbvaWalletXmlAdapter;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
+import lombok.RequiredArgsConstructor;
+import org.dhatim.fastexcel.Workbook;
+import org.dhatim.fastexcel.Worksheet;
 import org.dhatim.fastexcel.reader.ReadableWorkbook;
 import org.dhatim.fastexcel.reader.Row;
 import org.dhatim.fastexcel.reader.Sheet;
+import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
-public class BbvaXmlReaderImpl implements BbvaXmlReader {
+@Component
+@RequiredArgsConstructor
+public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
 
+    private final EntryService entryService;
     int START_ROW_INDEX = 3;
 
     String tdd = "1234";
@@ -61,5 +67,24 @@ public class BbvaXmlReaderImpl implements BbvaXmlReader {
             throw new RuntimeException(e);
         }
         return entries;
+    }
+
+    @Override
+    public File export(String account) throws IOException {
+
+        List<Entry> entries = entryService.getNotExportedEntries();
+        entries = entries.stream().filter(entry -> entry.getAccount().equals(account)).toList();
+
+        File file = new File(String.format("from_%s_to_%s.xlsx", entries.get(0).getDate(), entries.get(entries.size()-1).getDate()));
+        try (OutputStream os = new FileOutputStream(file); Workbook wb = new Workbook(os, "My app", "1.0")) {
+            Worksheet ws = wb.newWorksheet("Sheet 1");
+            for (int row = 0; row < entries.size(); row++) {
+                ws.value(row, 0, entries.get(row).getDate());
+                ws.value(row, 0, entries.get(row).getDescription());
+                ws.value(row, 0, entries.get(row).getAmount());
+            }
+        }
+        entryService.markAsExported(entries);
+        return file;
     }
 }

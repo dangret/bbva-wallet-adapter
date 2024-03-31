@@ -6,11 +6,14 @@ import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.EntryMapper;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.EntryRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
+@Service
 public class EntryServiceImpl implements EntryService {
 
     private final EntryRepository entryRepository;
@@ -25,6 +28,17 @@ public class EntryServiceImpl implements EntryService {
                                 .contains(entry.getId())).toList();
 
         entryRepository.saveAll(entryMapper.toEntities(newEntries));
+    }
+
+    @Override
+    public List<Entry> getNotExportedEntries() {
+        return entryMapper.toEntry(entryRepository.findByExportedNull());
+    }
+
+    @Override
+    public void markAsExported(List<Entry> entries) {
+        entries.forEach(entry -> entry.setExported(LocalDate.now()));
+        entryRepository.saveAll(entryMapper.toEntities(entries));
     }
 
     // TODO: Blocked since there is not API in wallet
