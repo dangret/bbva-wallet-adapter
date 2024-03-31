@@ -24,7 +24,7 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		List<Entry> entries = bbvaXmlReader.read(new File(args[0]));
-		entryService.save(entries);
+		//List<Entry> entries = bbvaXmlReader.read(new File(args[0]));
+		//entryService.save(entries);
 	}
 }

@@ -10,4 +10,5 @@ import java.util.List;
 public interface EntryMapper {
     EntryEntity toEntity(Entry entry);
     List<EntryEntity> toEntities(List<Entry> entries);
+    List<Entry> toEntry(List<EntryEntity> entryEntities);
 }

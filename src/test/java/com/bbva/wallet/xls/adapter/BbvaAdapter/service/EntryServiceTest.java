@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
-@TestPropertySource("classpath:application.properties")
+@TestPropertySource("classpath:application.yaml")
 public class EntryServiceTest {
 
     @InjectMocks

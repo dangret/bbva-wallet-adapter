@@ -20,7 +20,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-@TestPropertySource("classpath:application.properties")
+@TestPropertySource("classpath:application.yaml")
 public class BbvaXmlReaderImplTest {
 
     @InjectMocks

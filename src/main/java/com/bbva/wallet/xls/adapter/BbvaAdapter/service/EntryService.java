@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface EntryService {
 
-    Boolean save(List<Entry> entries);
+    void save(List<Entry> entries);
 
 }

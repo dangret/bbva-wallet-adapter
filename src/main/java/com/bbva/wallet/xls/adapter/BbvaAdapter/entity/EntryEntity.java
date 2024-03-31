@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "entry")
+@Getter
 public class EntryEntity {
 
     @Id
@@ -21,4 +23,6 @@ public class EntryEntity {
     private BigDecimal amount;
     private String description;
     private LocalDate date;
-    private String account;}
+    private String account;
+    private LocalDate exported;
+}

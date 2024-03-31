@@ -17,6 +17,7 @@ public class Entry {
     private BigDecimal amount;
     private String description;
     private LocalDate date;
+    private LocalDate exported;
     private String account;
 
     public String getId() {
