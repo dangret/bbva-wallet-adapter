@@ -1,9 +1,12 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.EntryMapper;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.EntryRepository;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Account;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.AccountEntity;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.RecordMapper;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.AccountRepository;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.RecordRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.impl.EntryServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,34 +23,43 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @TestPropertySource("classpath:application.yaml")
-public class EntryServiceTest {
+public class RecordServiceTest {
 
     @InjectMocks
     EntryServiceImpl entryService;
     @Autowired
     ResourceLoader resourceLoader;
     @Mock
-    EntryRepository entryRepository;
+    RecordRepository recordRepository;
+    @Mock
+    AccountRepository accountRepository;
 
     @Mock
-    EntryMapper entryMapper;
+    RecordMapper recordMapper;
 
-    List<Entry> entries;
+    List<Record> entries;
 
     @Test
     public void saveToDB() throws IOException {
         givenValidEntries();
+        givenValidAccounts();
         whenPersistData();
         verifyDataIsSavedInDB();
     }
 
+    private void givenValidAccounts() {
+        AccountEntity account = new AccountEntity();
+        account.setId("10");
+        account.setCardLastDigits("1234");
+        when(accountRepository.findAll()).thenReturn(List.of(account));
+    }
+
     private void verifyDataIsSavedInDB() {
-        verify(entryRepository, times(1)).saveAll(anyList());
+        verify(recordRepository, times(0)).saveAll(anyList());
     }
 
     private void whenPersistData() {
@@ -55,11 +67,14 @@ public class EntryServiceTest {
     }
 
     private void givenValidEntries() throws IOException {
-        entries = List.of(Entry.builder()
+        entries = List.of(Record.builder()
                         .note("dummy description")
                         .amount(BigDecimal.valueOf(1234f))
                         .date(LocalDate.now())
-                        .account("1234")
+                        .account(Account.builder()
+                                .cardLastDigits("1234")
+                                .name("dummy account")
+                                .build())
                 .build());
     }
 

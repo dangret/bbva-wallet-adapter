@@ -1,33 +1,25 @@
-package com.bbva.wallet.xls.adapter.BbvaAdapter.entity;
+package com.bbva.wallet.xls.adapter.BbvaAdapter.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.*;
-import org.hibernate.proxy.HibernateProxy;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
 
-@Entity
-@Table(name = "entry")
-@Getter
-@Setter
-@RequiredArgsConstructor
-public class EntryEntity {
+@Data
+@Builder
+@ToString
+public class Record {
 
-    @Id
-    /*@GeneratedValue(generator = "id-generator")
-    @GenericGenerator(name = "id-generator", type = EntryIdGenerator.class )*/
     private String id;
     private BigDecimal amount;
     private String note;
     private LocalDate date;
     private LocalDate exported;
-    private String account;
-    /*
-    private String category;
+    private Account account;
+    /*private String category;
     private String currency;
     private BigDecimal ref_currency_amount;
     private String type;
@@ -43,4 +35,13 @@ public class EntryEntity {
     private int envelope_id;
     private boolean custom_category;*/
 
+
+
+    public String getId() {
+        return this.id != null ? this.id : (this.id = Util.calculateId(this));
+    }
+
+    public void setId(String id) {
+        this.id = Util.calculateId(this);
+    }
 }

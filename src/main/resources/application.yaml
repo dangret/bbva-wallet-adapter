@@ -13,10 +13,13 @@ spring:
     defer-datasource-initialization: false
     hibernate:
       ddl-auto: update
-      naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      properties.hibernate.format_sql: true
-      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+      #naming:
+       # implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        #physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      properties:
+        hibernate:
+          format_sql: true
+      #naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
   h2:
     console:
       enabled: true

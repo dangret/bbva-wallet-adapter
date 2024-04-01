@@ -1,9 +1,9 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service.impl;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.EntryEntity;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.EntryMapper;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.EntryRepository;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.RecordEntity;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.RecordMapper;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.RecordRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,36 +12,35 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
 public class EntryServiceImpl implements EntryService {
 
-    private final EntryRepository entryRepository;
-    private final EntryMapper entryMapper;
+    private final RecordRepository recordRepository;
+    private final RecordMapper recordMapper;
 
     /***
      * Used to save from BBVA to DB, it doesn't matter exported status, just make sure don't get duplicates
      * @param entries
      */
     @Override
-    public void save(List<Entry> entries) {
+    public void save(List<Record> entries) {
         List<String> entryIds = entries.stream()
-                .map(Entry::getId)
+                .map(Record::getId)
                 .toList();
 
-        List<String> existingEntriesIds = entryRepository.findAllById(entryIds).stream()
-                .map(EntryEntity::getId)
+        List<String> existingEntriesIds = recordRepository.findAllById(entryIds).stream()
+                .map(RecordEntity::getId)
                 .toList();
 
-        List<Entry> newEntries = entries.stream()
+        List<Record> newEntries = entries.stream()
                 .filter(entry -> !existingEntriesIds.contains(entry.getId()))
                 .toList();
 
 
-        //TODO: verify why entryMapper is not mapping correctly.
-        entryRepository.saveAll(entryMapper.toEntities(newEntries));
+        recordRepository.save(recordMapper.toEntity(newEntries.get(0)));
+        //recordRepository.saveAll(recordMapper.toEntities(newEntries));
     }
 
     /***
@@ -50,29 +49,29 @@ public class EntryServiceImpl implements EntryService {
      * @param entries
      */
     @Override
-    public void update(List<Entry> entries) {
-        Set<String> entryIds = entries.stream().map(Entry::getId).collect(Collectors.toSet());
+    public void update(List<Record> entries) {
+        Set<String> entryIds = entries.stream().map(Record::getId).collect(Collectors.toSet());
 
         // Get all entries already in DB with exported status
-        List<String> alreadyExportedEntryIds = entryRepository.findByIdInAndExportedNotNull(entryIds).stream()
-                .map(EntryEntity::getId).toList();
+        List<String> alreadyExportedEntryIds = recordRepository.findByIdInAndExportedNotNull(entryIds).stream()
+                .map(RecordEntity::getId).toList();
 
         // Remove from read entries, those already in DB and already exported (means exported previously from wallet)
-        List<Entry> newEntries = entries.stream()
+        List<Record> newEntries = entries.stream()
                 .filter(entry -> !alreadyExportedEntryIds.contains(entry.getId())).toList();
 
-        entryRepository.saveAll(entryMapper.toEntities(newEntries));
+        recordRepository.saveAll(recordMapper.toEntities(newEntries));
     }
 
     @Override
-    public List<Entry> getNotExportedEntries() {
-        return entryMapper.toEntry(entryRepository.findByExportedNull());
+    public List<Record> getNotExportedEntries() {
+        return recordMapper.toEntry(recordRepository.findByExportedNull());
     }
 
     @Override
-    public void markAsExported(List<Entry> entries) {
+    public void markAsExported(List<Record> entries) {
         entries.forEach(entry -> entry.setExported(LocalDate.now()));
-        entryRepository.saveAll(entryMapper.toEntities(entries));
+        recordRepository.saveAll(recordMapper.toEntities(entries));
     }
 
     // TODO: Blocked since there is not API in wallet

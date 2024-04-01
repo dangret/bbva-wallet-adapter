@@ -1,7 +1,7 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter;
 
 import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl.BbvaWalletXmlAdapter;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -68,12 +68,12 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 	}
 
 	private void importFromBbva(String xlsXFilePath) {
-		List<Entry> entries = bbvaWalletXmlAdapter.importFromBbva(new File(xlsXFilePath));
+		List<Record> entries = bbvaWalletXmlAdapter.importFromBbva(new File(xlsXFilePath));
 		entryService.save(entries);
 	}
 
 	private void importFromWallet(String xlsXFilePath) {
-		List<Entry> entries = bbvaWalletXmlAdapter.importFromWallet(new File(xlsXFilePath));
+		List<Record> entries = bbvaWalletXmlAdapter.importFromWallet(new File(xlsXFilePath));
 		entryService.update(entries);
 	}
 }

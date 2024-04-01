@@ -1,25 +1,30 @@
-package com.bbva.wallet.xls.adapter.BbvaAdapter.dto;
+package com.bbva.wallet.xls.adapter.BbvaAdapter.entity;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Account;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@Builder
-@ToString
-public class Entry {
+@Entity
+@Getter
+@Setter
+@Table(name = "record")
+public class RecordEntity {
 
+    @Id
     private String id;
     private BigDecimal amount;
     private String note;
     private LocalDate date;
     private LocalDate exported;
-    private String account;
-    /*private String category;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private AccountEntity account;
+    /*
+    private String category;
     private String currency;
     private BigDecimal ref_currency_amount;
     private String type;
@@ -35,13 +40,4 @@ public class Entry {
     private int envelope_id;
     private boolean custom_category;*/
 
-
-
-    public String getId() {
-        return this.id != null ? this.id : (this.id = Util.calculateId(this));
-    }
-
-    public void setId(String id) {
-        this.id = Util.calculateId(this);
-    }
 }

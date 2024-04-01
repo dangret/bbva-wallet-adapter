@@ -1,14 +1,14 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Entry;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
 
 import java.util.List;
 
 public interface EntryService {
 
-    void save(List<Entry> entries);
-    void update(List<Entry> entries);
-    List<Entry> getNotExportedEntries();
-    void markAsExported(List<Entry> entries);
+    void save(List<Record> entries);
+    void update(List<Record> entries);
+    List<Record> getNotExportedEntries();
+    void markAsExported(List<Record> entries);
 
 }
