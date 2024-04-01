@@ -56,7 +56,7 @@ public class EntryServiceTest {
 
     private void givenValidEntries() throws IOException {
         entries = List.of(Entry.builder()
-                        .description("dummy description")
+                        .note("dummy description")
                         .amount(BigDecimal.valueOf(1234f))
                         .date(LocalDate.now())
                         .account("1234")

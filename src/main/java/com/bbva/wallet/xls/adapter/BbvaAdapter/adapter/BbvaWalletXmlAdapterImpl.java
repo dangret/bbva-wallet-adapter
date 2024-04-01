@@ -22,12 +22,13 @@ import java.util.*;
 public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
 
     private final EntryService entryService;
-    int START_ROW_INDEX = 3;
+    int BBVA_START_ROW_INDEX = 3;
+    int WALLET_START_ROW_INDEX = 1;
 
     String tdd = "1234";
     String tdc = "5678";
     @Override
-    public List<Entry> read(File fileLocation) {
+    public List<Entry> importFromBbva(File fileLocation) {
         List<Entry> entries = new ArrayList<>();
         try (FileInputStream file = new FileInputStream(fileLocation); ReadableWorkbook wb = new ReadableWorkbook(file)) {
             Sheet sheet = wb.getFirstSheet();
@@ -35,9 +36,9 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
             Row row = null;
             String account = null;
             Entry entry = null;
-            for (int rowIndex = START_ROW_INDEX; rowIndex < sheet.read().size(); rowIndex++) {
+            for (int rowIndex = BBVA_START_ROW_INDEX; rowIndex < sheet.read().size(); rowIndex++) {
                 row = sheet.read().get(rowIndex);
-                if (rowIndex == START_ROW_INDEX && row.getCell(0).getRawValue().contains(tdd)){
+                if (rowIndex == BBVA_START_ROW_INDEX && row.getCell(0).getRawValue().contains(tdd)){
                     account = tdd;
                     continue;
                 }
@@ -47,7 +48,7 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
                     entry = Entry.builder()
                             .account(account)
                             .date(LocalDate.parse(row.getCell(0).getRawValue(), Util.DATE_FORMAT))
-                            .description(row.getCell(1).asString())
+                            .note(row.getCell(1).asString())
                             .amount(new BigDecimal(
                                     Optional.ofNullable(row.getCell(2).getRawValue() != null
                                                     ? "-" + row.getCell(2).getRawValue() : null)
@@ -70,7 +71,7 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
     }
 
     @Override
-    public File export(String account) throws IOException {
+    public File exportToWallet(String account) throws IOException {
 
         List<Entry> entries = entryService.getNotExportedEntries();
         entries = entries.stream().filter(entry -> entry.getAccount().equals(account)).toList();
@@ -80,11 +81,44 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
             Worksheet ws = wb.newWorksheet("Sheet 1");
             for (int row = 0; row < entries.size(); row++) {
                 ws.value(row, 0, entries.get(row).getDate());
-                ws.value(row, 0, entries.get(row).getDescription());
+                ws.value(row, 0, entries.get(row).getNote());
                 ws.value(row, 0, entries.get(row).getAmount());
             }
         }
         entryService.markAsExported(entries);
         return file;
     }
+
+    @Override
+    public List<Entry> importFromWallet(File fileLocation) {
+        List<Entry> entries = new ArrayList<>();
+        try (FileInputStream file = new FileInputStream(fileLocation); ReadableWorkbook wb = new ReadableWorkbook(file)) {
+            Sheet sheet = wb.getFirstSheet();
+
+            Row row = null;
+            String account = null;
+            Entry entry = null;
+            for (int rowIndex = WALLET_START_ROW_INDEX; rowIndex < sheet.read().size(); rowIndex++) {
+                row = sheet.read().get(rowIndex);
+                String rowValue = row.getCell(0).getRawValue();
+
+                if (rowValue == null) break;
+
+                entry = Entry.builder()
+                        .account(row.getCell(0).getRawValue())
+                        .date(LocalDate.parse(row.getCell(9).getRawValue(), Util.DATE_FORMAT))
+                        .note(row.getCell(8).asString())
+                        .amount(new BigDecimal(row.getCell(3).getRawValue()))
+                        .exported(LocalDate.now())
+                        .build();
+                entries.add(entry);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        entryService.update(entries);
+        return entries;
+    }
+
+
 }
