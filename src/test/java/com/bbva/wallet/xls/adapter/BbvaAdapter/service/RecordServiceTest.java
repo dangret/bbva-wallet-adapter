@@ -1,10 +1,8 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Account;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.AccountEntity;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.RecordMapper;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Account;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.AccountRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.RecordRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.impl.EntryServiceImpl;
@@ -38,9 +36,6 @@ public class RecordServiceTest {
     @Mock
     AccountRepository accountRepository;
 
-    @Mock
-    RecordMapper recordMapper;
-
     List<Record> entries;
 
     @Test
@@ -52,14 +47,14 @@ public class RecordServiceTest {
     }
 
     private void givenValidAccounts() {
-        AccountEntity account = new AccountEntity();
+        Account account = new Account();
         account.setId("10");
         account.setCardLastDigits("1234");
         when(accountRepository.findAll()).thenReturn(List.of(account));
     }
 
     private void verifyDataIsSavedInDB() {
-        verify(recordRepository, times(0)).saveAll(anyList());
+        verify(recordRepository, times(1)).saveAll(anyList());
     }
 
     private void whenPersistData() {

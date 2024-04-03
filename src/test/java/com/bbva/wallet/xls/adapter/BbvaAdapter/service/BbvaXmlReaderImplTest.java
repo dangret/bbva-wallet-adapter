@@ -1,9 +1,8 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.BbvaWalletXmlAdapterImpl;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.mapper.AccountMapper;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl.BbvaWalletXmlAdapterImpl;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,8 +27,6 @@ public class BbvaXmlReaderImplTest {
     BbvaWalletXmlAdapterImpl bbvaXmlReader;
     @Mock
     AccountRepository accountRepository;
-    @Mock
-    AccountMapper accountMapper;
 
     File file;
 
@@ -43,7 +40,7 @@ public class BbvaXmlReaderImplTest {
     }
 
     private void assertInformationIsValid() {
-        List<Record> entries = bbvaXmlReader.importFromBbva(file);
+        List<Record> entries = bbvaXmlReader.importFromCreditCardBbva(file);
         assertEquals("EMBOTELLADORA DEL NAYA", entries.get(0).getNote());
         assertEquals(new BigDecimal("-174"), entries.get(0).getAmount());
         assertEquals("3b6c655f-47ff-3964-8bdc-659c8ac35a82", entries.get(0).getId());

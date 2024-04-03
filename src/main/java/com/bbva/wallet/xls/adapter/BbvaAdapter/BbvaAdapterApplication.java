@@ -1,7 +1,7 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl.BbvaWalletXmlAdapter;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.BbvaWalletXmlAdapter;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -28,10 +28,12 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 	/***
 	 * Usage:
 	 *  --import
-	 *      --bbva [filepath]
+	 *      --bbva
+	 *      	--cc
+	 *          --dc [filepath]
 	 *      --wallet [filepath]
 	 *  --export
-	 *  	--account [account_name] --filename [filename]
+	 *  	--account [account_name]
 	 *  example:
 	 *  	--import --bbva data.xlsx
 	 *  	--export --account "Daniel TDD"
@@ -54,22 +56,36 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 	}
 
 	private void exportPath(String[] args) throws IOException {
-		File newFile = bbvaWalletXmlAdapter.exportToWallet(args[2]);
-		System.out.printf("File %s created successfully%n", newFile.getPath());
+		if (args.length > 2) {
+			File newFile = bbvaWalletXmlAdapter.exportToWallet(args[2]);
+			if (newFile == null) {
+				System.out.println("Nothing new to export");
+				return;
+			}
+			System.out.printf("File %s created successfully%n", newFile.getPath());
+		} else {
+			bbvaWalletXmlAdapter.exportToWallet();
+		}
+
 	}
 
 	private void importPath(String... args) {
-		String xlsxFilePath = args[2];
+		String xlsxFilePath = args[3];
 		switch (args[1]) {
-			case "--bbva": importFromBbva(xlsxFilePath); break;
+			case "--bbva": importFromBbva(xlsxFilePath, args[2]); break;
 			case "--wallet": importFromWallet(xlsxFilePath); break;
 			default: throw new IllegalArgumentException();
 		}
 	}
 
-	private void importFromBbva(String xlsXFilePath) {
-		List<Record> entries = bbvaWalletXmlAdapter.importFromBbva(new File(xlsXFilePath));
-		entryService.save(entries);
+	private void importFromBbva(String xlsXFilePath, String type) {
+		List<Record> entries = switch (type) {
+            case "--cc" -> bbvaWalletXmlAdapter.importFromCreditCardBbva(new File(xlsXFilePath));
+            case "--dc" -> bbvaWalletXmlAdapter.importFromDebitCardBbva(new File(xlsXFilePath));
+            default -> null;
+        };
+
+        entryService.save(entries);
 	}
 
 	private void importFromWallet(String xlsXFilePath) {

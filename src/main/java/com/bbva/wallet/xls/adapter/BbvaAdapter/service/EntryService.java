@@ -1,6 +1,7 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.service;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
+
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 
 import java.util.List;
 

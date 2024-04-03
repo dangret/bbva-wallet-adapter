@@ -1,23 +1,27 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.entity;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Account;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "account")
-public class AccountEntity {
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private String id;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
+    private List<Record> records;
+
     private String name;
     private String cardLastDigits;
 

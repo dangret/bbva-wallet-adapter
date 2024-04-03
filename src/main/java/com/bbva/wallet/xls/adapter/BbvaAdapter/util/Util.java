@@ -1,7 +1,6 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.util;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Record;
-import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.RecordEntity;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;

@@ -1,8 +1,10 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.entity;
 
-import com.bbva.wallet.xls.adapter.BbvaAdapter.dto.Account;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Generator.RecordIdGenerator;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -10,19 +12,34 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "record")
-public class RecordEntity {
+public class Record {
 
     @Id
+    @GeneratedValue(generator = "id-generator")
+    @GenericGenerator(name = "id-generator", type = RecordIdGenerator.class )
     private String id;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private Account account;
+
     private BigDecimal amount;
     private String note;
     private LocalDate date;
     private LocalDate exported;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id", referencedColumnName = "id")
-    private AccountEntity account;
+    public String getId() {
+        return Util.calculateId(this);
+    }
+
+    public void setId(String id) {
+        this.id = this.id != null ? this.id : Util.calculateId(this);
+    }
+
     /*
     private String category;
     private String currency;
