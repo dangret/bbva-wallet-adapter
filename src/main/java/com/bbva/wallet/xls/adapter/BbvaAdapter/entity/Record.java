@@ -7,7 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Entity
 @Getter
@@ -29,8 +29,8 @@ public class Record {
 
     private BigDecimal amount;
     private String note;
-    private LocalDate date;
-    private LocalDate exported;
+    private OffsetDateTime date;
+    private OffsetDateTime exported;
 
     public String getId() {
         return Util.calculateId(this);

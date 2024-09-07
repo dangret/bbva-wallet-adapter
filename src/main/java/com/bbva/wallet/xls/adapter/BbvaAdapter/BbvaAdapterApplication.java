@@ -70,10 +70,9 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 	}
 
 	private void importPath(String... args) {
-		String xlsxFilePath = args[3];
 		switch (args[1]) {
-			case "--bbva": importFromBbva(xlsxFilePath, args[2]); break;
-			case "--wallet": importFromWallet(xlsxFilePath); break;
+			case "--bbva": importFromBbva(args[3], args[2]); break;
+			case "--wallet": importFromWallet(args[2]); break;
 			default: throw new IllegalArgumentException();
 		}
 	}

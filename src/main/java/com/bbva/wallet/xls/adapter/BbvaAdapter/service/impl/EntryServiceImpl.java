@@ -4,14 +4,16 @@ import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.RecordRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class EntryServiceImpl implements EntryService {
 
@@ -23,20 +25,11 @@ public class EntryServiceImpl implements EntryService {
      */
     @Override
     public void save(List<Record> entries) {
-        List<String> entryIds = entries.stream()
-                .map(Record::getId)
-                .toList();
 
-        List<String> existingEntriesIds = recordRepository.findAllById(entryIds).stream()
-                .map(Record::getId)
-                .toList();
+        List<String> idsInDB = recordRepository.findAllById(entries.stream().map(Record::getId).toList()).stream().map(Record::getId).toList();
+        List<Record> entriesFiltered = entries.stream().filter(entry -> !idsInDB.contains(entry.getId())).toList();
 
-        List<Record> records = entries.stream()
-                .filter(entry -> !existingEntriesIds.contains(entry.getId()))
-                .toList();
-
-
-        recordRepository.saveAll(records);
+        recordRepository.saveAll(entriesFiltered);
     }
 
     /***
@@ -45,18 +38,20 @@ public class EntryServiceImpl implements EntryService {
      * @param entries
      */
     @Override
-    public void update(List<Record> entries) {
-        Set<String> entryIds = entries.stream().map(Record::getId).collect(Collectors.toSet());
+    public void update(final List<Record> entries) {
+        List<String> entryIds = entries.stream().map(Record::getId).collect(Collectors.toList());
 
         // Get all entries already in DB with exported status
-        List<String> alreadyExportedEntryIds = recordRepository.findByIdInAndExportedNotNull(entryIds).stream()
-                .map(Record::getId).toList();
+        List<Record> records = recordRepository.findByIdIn(entryIds).stream()
+                .filter(record -> record.getExported() != null).toList();
 
-        // Remove from read entries, those already in DB and already exported (means exported previously from wallet)
-        List<Record> records = entries.stream()
-                .filter(entry -> !alreadyExportedEntryIds.contains(entry.getId())).toList();
+        for (Record entry : entries) {
+            Record record = records.stream().filter(r -> r.getId().equals(entry.getId())).findFirst().orElse(null);
+            if (record == null) continue;
+            entry.setExported(record.getExported());
+        }
 
-        recordRepository.saveAll(records);
+        recordRepository.saveAll(entries);
     }
 
     @Override
@@ -66,7 +61,7 @@ public class EntryServiceImpl implements EntryService {
 
     @Override
     public void markAsExported(List<Record> records) {
-        records.forEach(entry -> entry.setExported(LocalDate.now()));
+        records.forEach(entry -> entry.setExported(OffsetDateTime.now(ZoneOffset.UTC)));
         recordRepository.saveAll(records);
     }
 

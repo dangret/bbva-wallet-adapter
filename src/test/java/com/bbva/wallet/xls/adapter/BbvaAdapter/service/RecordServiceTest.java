@@ -16,10 +16,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
@@ -65,7 +65,7 @@ public class RecordServiceTest {
         entries = List.of(Record.builder()
                         .note("dummy description")
                         .amount(BigDecimal.valueOf(1234f))
-                        .date(LocalDate.now())
+                        .date(OffsetDateTime.now(ZoneOffset.UTC))
                         .account(Account.builder()
                                 .cardLastDigits("1234")
                                 .name("dummy account")
