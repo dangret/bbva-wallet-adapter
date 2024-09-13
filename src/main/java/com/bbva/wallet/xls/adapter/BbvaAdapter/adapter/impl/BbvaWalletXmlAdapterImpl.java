@@ -211,25 +211,25 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
                 row.createCell(1).setCellValue("note");
                 row.createCell(2).setCellValue("amount");
 
-                for (int rowIndex = 1; rowIndex <= records.size(); rowIndex++) {
+                for (int rowIndex = 1; rowIndex <= accountRecords.size(); rowIndex++) {
                     row = ws.createRow(rowIndex);
                     Cell dateCell = row.createCell(DATE_COLUMN_INDEX);
                     Cell noteCell = row.createCell(NOTES_COLUMN_INDEX);
                     Cell amountCell = row.createCell(AMOUNT_COLUMN_INDEX);
 
                     dateCell.getCellStyle().setDataFormat(dateFormatIndex);
-                    dateCell.setCellValue(records.get(rowIndex - 1).getDate().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime().format(DATE_TIME_FORMAT_WALLET));
+                    dateCell.setCellValue(accountRecords.get(rowIndex - 1).getDate().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime().format(DATE_TIME_FORMAT_WALLET));
                     noteCell.getCellStyle().setDataFormat(notesFormatIndex);
-                    noteCell.setCellValue(records.get(rowIndex-1).getNote());
+                    noteCell.setCellValue(accountRecords.get(rowIndex-1).getNote());
                     amountCell.getCellStyle().setDataFormat(amountFormatIndex);
-                    amountCell.setCellValue(records.get(rowIndex-1).getAmount().doubleValue());
+                    amountCell.setCellValue(accountRecords.get(rowIndex-1).getAmount().doubleValue());
                 }
                 wb.write(os);
-                print(records);
+                print(accountRecords);
             }
         }
 
-        //entryService.markAsExported(records);
+        entryService.markAsExported(records);
     }
 
     @Override
