@@ -9,8 +9,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
+import javax.naming.directory.InvalidAttributeValueException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootApplication
@@ -69,22 +71,23 @@ public class BbvaAdapterApplication implements CommandLineRunner {
 
 	}
 
-	private void importPath(String... args) {
+	private void importPath(String... args) throws InvalidAttributeValueException {
 		switch (args[1]) {
-			case "--bbva": importFromBbva(args[3], args[2]); break;
+			case "--bbva": importFromBbva(args); break;
 			case "--wallet": importFromWallet(args[2]); break;
 			default: throw new IllegalArgumentException();
 		}
 	}
 
-	private void importFromBbva(String xlsXFilePath, String type) {
-		List<Record> entries = switch (type) {
-            case "--cc" -> bbvaWalletXmlAdapter.importFromCreditCardBbva(new File(xlsXFilePath));
-            case "--dc" -> bbvaWalletXmlAdapter.importFromDebitCardBbva(new File(xlsXFilePath));
-            default -> null;
-        };
-
-        entryService.save(entries);
+	private void importFromBbva(String... args) throws InvalidAttributeValueException {
+		String type = args[2];
+		switch (type) {
+					case "--all": bbvaWalletXmlAdapter.importToBbvaAll(); break;
+					case "--cc": entryService.save(bbvaWalletXmlAdapter.importFromCreditCardBbva(new File(args[3])));
+					break;
+					case "--dc": entryService.save(bbvaWalletXmlAdapter.importFromDebitCardBbva(new File(args[3])));
+					break;
+        }
 	}
 
 	private void importFromWallet(String xlsXFilePath) {

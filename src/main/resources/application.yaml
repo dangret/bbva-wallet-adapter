@@ -1,3 +1,10 @@
+
+path:
+  app.root: "."
+  import: "xlsxToImport"
+  imported: "${path.import}/imported"
+  export: "exports"
+
 spring:
   application:
     name: BbvaAdapter

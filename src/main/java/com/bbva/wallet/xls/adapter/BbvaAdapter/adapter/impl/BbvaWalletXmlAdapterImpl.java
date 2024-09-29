@@ -1,6 +1,7 @@
 package com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.impl;
 
 import com.bbva.wallet.xls.adapter.BbvaAdapter.adapter.BbvaWalletXmlAdapter;
+import com.bbva.wallet.xls.adapter.BbvaAdapter.constants.XlsType;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Account;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Record;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.AccountRepository;
@@ -8,14 +9,18 @@ import com.bbva.wallet.xls.adapter.BbvaAdapter.repository.RecordRepository;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.service.EntryService;
 import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.naming.directory.InvalidAttributeValueException;
 import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -37,6 +42,14 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
   int WALLET_START_ROW_INDEX = 1;
 
   private final RecordRepository recordRepository;
+
+  @Value("${path.import}")
+  private String importPath;
+
+  @Value("${path.imported}")
+  private String imported;
+  @Value("${path.export}")
+  private String exportPath;
 
   @Override
   public List<Record> importFromCreditCardBbva(File fileLocation) {
@@ -126,6 +139,93 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
     return entries;
   }
 
+  public void importToBbvaAll() throws InvalidAttributeValueException {
+    File rootFolder = new File(importPath);
+    if (!rootFolder.isDirectory()) {
+      throw new InvalidAttributeValueException("location is not a directory");
+    }
+    List<Record> records;
+    for (File file : Objects.requireNonNull(rootFolder.listFiles((f) -> f.getName().endsWith(".xlsx")))) {
+      records = null;
+      XlsType xlsType = getFileType(file.getAbsolutePath());
+
+      if (xlsType == XlsType.BBVA_CC) {
+        records = importFromCreditCardBbva(file);
+      } else if (xlsType == XlsType.BBVA_DC) {
+        records = importFromDebitCardBbva(file);
+      }
+
+      if (records != null) {
+        entryService.save(records);
+        moveToImportedFolder(file, records, xlsType);
+      }
+    }
+  }
+
+  private boolean moveToImportedFolder(File file, List<Record> records, XlsType xlsType) {
+    String newFilename = String.format("%s_%s.xlsx", xlsType, getMaxMinDateFileNameFormat(records));
+    return file.renameTo(new File(imported + File.separator + newFilename));
+  }
+
+  private String getMaxMinDateFileNameFormat(List<Record> records) {
+    records.sort(Comparator.comparing(Record::getDate));
+    LocalDate minDate = records.get(0).getDate().toLocalDate();
+    LocalDate maxDate = records.get(records.size() - 1).getDate().toLocalDate();
+
+    DateTimeFormatter ymmdFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter mmddFormatter = DateTimeFormatter.ofPattern("MM-dd");
+    DateTimeFormatter ddFormatter = DateTimeFormatter.ofPattern("dd");
+    boolean useYear = true;
+    boolean useMonth = true;
+    boolean useDay = true;
+    String initialDate = minDate.format(ymmdFormatter);
+    String finalDate;
+
+    if (minDate.getYear() == maxDate.getYear()) {
+      useYear = false;
+      if (minDate.getMonth() == maxDate.getMonth()) {
+        useMonth = false;
+        if (minDate.getDayOfYear() == maxDate.getDayOfYear()) {
+          useDay = false;
+        }
+      }
+    }
+    DateTimeFormatter latestDateFormatter = ymmdFormatter;
+    if (!useYear) {
+      latestDateFormatter = mmddFormatter;
+      if (!useMonth) {
+        latestDateFormatter = ddFormatter;
+      }
+    }
+
+    finalDate = latestDateFormatter.format(maxDate);
+    if (!useDay) {
+      finalDate = "";
+    }
+
+    return String.format("%s_%s", initialDate, finalDate);
+  }
+
+  public XlsType getFileType(String fileLocation) {
+    try (FileInputStream file = new FileInputStream(fileLocation); Workbook wb = new XSSFWorkbook(file)) {
+      Sheet sheet = wb.getSheetAt(0);
+      Row row = sheet.getRow(0);
+      String rowValue = row.getCell(0).toString();
+      Account bbvaCC = accountRepository.findById("10").orElseThrow();
+      Account bbvaDC = accountRepository.findById("30").orElseThrow();
+      if (rowValue.contains(bbvaCC.getCardLastDigits())) {
+        return XlsType.BBVA_CC;
+      } else if (rowValue.contains(bbvaDC.getCardLastDigits())) {
+        return XlsType.BBVA_DC;
+      }
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return null;
+  }
+
   private void print(List<Record> entries) {
     System.out.println();
     for (Record entry : entries) {
@@ -143,13 +243,12 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
     Account account = accountRepository.findByName(accountName).stream().findFirst().orElseThrow(IllegalArgumentException::new);
     List<Record> records = account.getRecords();
     records = records.stream().filter(record -> record.getExported() == null).toList();
+
     if (records.size() == 0) {
       return null;
     }
-    Workbook workbook = new XSSFWorkbook();
 
-    Sheet sheet = workbook.createSheet("Persons");
-    File file = new File(String.format("%s_from_%s_to_%s.xlsx", account.getName(), records.get(0).getDate(), records.get(records.size() - 1).getDate()));
+    File file = new File(exportPath + File.separator +  String.format("%s_from_%s_to_%s.xlsx", account.getName(), records.get(0).getDate(), records.get(records.size() - 1).getDate()));
     file.createNewFile();
 
     try (OutputStream os = new FileOutputStream(file); Workbook wb = new XSSFWorkbook()) {
@@ -198,7 +297,7 @@ public class BbvaWalletXmlAdapterImpl implements BbvaWalletXmlAdapter {
       List<Record> accountRecords = entry.getValue();
       String maxDate = accountRecords.stream().map(Record::getDate).max(OffsetDateTime::compareTo).get().format(DateTimeFormatter.ISO_DATE);
       String minDate = accountRecords.stream().map(Record::getDate).min(OffsetDateTime::compareTo).get().format(DateTimeFormatter.ISO_DATE);
-      file = new File(String.format("%s_from_%s_to_%s.xlsx", account, minDate, maxDate));
+      file = new File(exportPath + File.separator + String.format("%s_from_%s_to_%s.xlsx", account, minDate, maxDate));
       file.createNewFile();
       try (OutputStream os = new FileOutputStream(file); Workbook wb = new XSSFWorkbook()) {
         Sheet ws = wb.createSheet();
