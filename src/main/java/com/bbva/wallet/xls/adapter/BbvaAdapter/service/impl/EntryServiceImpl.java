@@ -26,8 +26,9 @@ public class EntryServiceImpl implements EntryService {
     @Override
     public void save(List<Record> entries) {
 
-        List<String> idsInDB = recordRepository.findAllById(entries.stream().map(Record::getId).toList()).stream().map(Record::getId).toList();
-        List<Record> entriesFiltered = entries.stream().filter(entry -> !idsInDB.contains(entry.getId())).toList();
+        List<Record> existingRecords = recordRepository.findAllById(entries.stream().map(Record::getId).toList());
+        List<String> existingRecordsId = existingRecords.stream().map(Record::getId).toList();
+        List<Record> entriesFiltered = entries.stream().filter(entry -> !existingRecordsId.contains(entry.getId())).toList();
 
         recordRepository.saveAll(entriesFiltered);
     }

@@ -4,6 +4,7 @@ import com.bbva.wallet.xls.adapter.BbvaAdapter.entity.Generator.RecordIdGenerato
 import com.bbva.wallet.xls.adapter.BbvaAdapter.util.Util;
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
@@ -33,7 +34,7 @@ public class Record {
     private OffsetDateTime exported;
 
     public String getId() {
-        return Util.calculateId(this);
+        return Strings.isBlank(this.id) ? Util.calculateId(this) : this.id;
     }
 
     public void setId(String id) {
